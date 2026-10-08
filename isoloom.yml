@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://www.isoloom.com/schema/v1.json
+# Vulnerable eCommerce API (secDevLabs, by Globo.com) as an Isoloom spec: a Go API with a Broken
+# Access Control flaw (tickets fetched by user id, no ownership check), vendored unchanged in
+# build/api/app/ (the app folder owasp-top10-2021-apps/a1/ecommerce-api of secDevLabs), built by
+# an overlay of upstream's Dockerfile, and its MongoDB machine.
+# `isoloom generate`, then `isoloom up docker`.
+version: 1
+name: secdevlabs-ecommerce-api
+
+networks:
+  lab: { cidr: 10.60.91.0/24, internet: false }
+
+machines:
+  mongodb:
+    networks: { lab: 20 }
+    services: [{ port: 27017, name: mongodb }]
+    resources: { cpus: 1, memory_mb: 512 }
+    volumes: { data: /data/db }
+    docker:
+      build: build/mongodb
+
+  api:
+    networks: { lab: 10 }
+    services: [{ port: 10005, name: api, http: true, publish: 10005 }]
+    resources: { cpus: 1, memory_mb: 512 }
+    depends_on: [mongodb]
+    docker:
+      build: build/api
+
+checks:
+  - name: the store answers
+    http: http://api:10005/
+    wait: 180
+  - name: the API health check answers
+    http: http://api:10005/healthcheck
+  - name: the ticket route answers without a session
+    script: checks/ticket.sh
+    wait: 60
+
+message: |
+  Vulnerable eCommerce API answers at http://localhost:{{ machines.api.services.0.publish }}/.
+  Register two users, log in, and compare how each one fetches its ticket.
