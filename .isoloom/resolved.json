@@ -135,7 +135,8 @@
       "vagrant": "needs `vm:` on mongodb, api",
       "proxmox": "needs `vm:` on mongodb, api",
       "cloud-vm": "needs `vm:` on mongodb, api",
-      "external": "needs `external:` on mongodb, api"
+      "external": "needs `external:` on mongodb, api",
+      "cloud-services": "left out by `targets:`"
     }
   },
   "checks": {
