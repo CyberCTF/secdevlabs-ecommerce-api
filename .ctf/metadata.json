@@ -4,10 +4,5 @@
   "question": "Read another user's ticket without logging in as that user.",
   "category": "WEB",
   "difficulty": 1,
-  "evidence_kind": "SECRET",
-  "capabilities": [
-    "broken-access-control",
-    "idor",
-    "api"
-  ]
+  "evidence_kind": "SECRET"
 }
