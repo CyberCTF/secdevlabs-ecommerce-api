@@ -1,7 +1,7 @@
 {
   "title": "secDevLabs Vulnerable eCommerce API",
   "description": "A Go ticket store API backed by MongoDB. Every registered user gets a ticket, and the ticket route trusts the user id in its URL.",
-  "question": "Read another user's ticket without logging in as that user.",
+  "question": "Read another user's ticket without logging in as that user; the admin's ticket is the flag.",
   "category": "WEB",
   "difficulty": 1,
   "evidence_kind": "SECRET"

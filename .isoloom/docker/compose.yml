@@ -18,6 +18,8 @@ services:
     networks:
       lab:
         ipv4_address: 10.60.91.20
+    environment:
+      CTF_FLAG_MAIN: ${CTF_FLAG_MAIN:-}
     volumes:
     - mongodb-data:/data/db
     - isoloom-probe-amd64:/.isoloom-probe:ro
@@ -68,6 +70,26 @@ services:
     labels:
       isoloom.managed: 'true'
       isoloom.environment: secdevlabs-ecommerce-api
+  mongodb-init-1:
+    image: isoloom/secdevlabs-ecommerce-api-mongodb
+    entrypoint:
+    - /bin/sh
+    - /isoloom/init/flag.sh
+    volumes:
+    - ../../ctf/flag.sh:/isoloom/init/flag.sh:ro
+    - mongodb-data:/data/db
+    network_mode: service:mongodb
+    environment:
+      CTF_FLAG_MAIN: ${CTF_FLAG_MAIN:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      mongodb-routes:
+        condition: service_healthy
+    restart: no
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: secdevlabs-ecommerce-api
   api:
     build:
       context: ../../build/api
@@ -100,6 +122,8 @@ services:
         condition: service_completed_successfully
       mongodb:
         condition: service_healthy
+      mongodb-init-1:
+        condition: service_completed_successfully
       mongodb-routes:
         condition: service_healthy
     deploy:
@@ -154,6 +178,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+      mongodb-init-1:
+        condition: service_completed_successfully
       mongodb-routes:
         condition: service_healthy
       api:
@@ -176,6 +202,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+      mongodb-init-1:
+        condition: service_completed_successfully
       mongodb-routes:
         condition: service_healthy
       api:
@@ -198,6 +226,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+      mongodb-init-1:
+        condition: service_completed_successfully
       mongodb-routes:
         condition: service_healthy
       api:

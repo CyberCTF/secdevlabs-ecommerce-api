@@ -7,6 +7,9 @@
 version: 1
 name: secdevlabs-ecommerce-api
 
+# Given by the CyberCTF launcher: this player's flag. Without it the development flag.
+inputs: [CTF_FLAG_MAIN]
+
 networks:
   lab: { cidr: 10.60.91.0/24, internet: false }
 
@@ -16,8 +19,10 @@ machines:
     services: [{ port: 27017, name: mongodb }]
     resources: { cpus: 1, memory_mb: 512 }
     volumes: { data: /data/db }
+    inputs: [CTF_FLAG_MAIN]
     docker:
       build: build/mongodb
+      init: [ctf/flag.sh]
 
   api:
     networks: { lab: 10 }

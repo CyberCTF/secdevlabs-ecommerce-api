@@ -7,6 +7,7 @@
 # OrbStack, Docker Desktop; elsewhere, push them to a registry the cluster pulls from):
 #   docker build -t isoloom/secdevlabs-ecommerce-api-mongodb build/mongodb
 #   docker build -t isoloom/secdevlabs-ecommerce-api-api build/api
+# Inputs (optional, unset ones are empty): kubectl -n isoloom-secdevlabs-ecommerce-api create secret generic isoloom-inputs --from-literal=CTF_FLAG_MAIN=…
 
 apiVersion: v1
 kind: Namespace
@@ -56,6 +57,13 @@ spec:
             - /.isoloom-probe/busybox nc -z -w 2 127.0.0.1 27017
           periodSeconds: 5
           failureThreshold: 60
+        env:
+        - name: CTF_FLAG_MAIN
+          valueFrom:
+            secretKeyRef:
+              name: isoloom-inputs
+              key: CTF_FLAG_MAIN
+              optional: true
         resources:
           limits:
             cpu: '1'
@@ -66,12 +74,38 @@ spec:
         - name: isoloom-probe
           mountPath: /.isoloom-probe
           readOnly: true
+      - name: init
+        image: isoloom/secdevlabs-ecommerce-api-mongodb
+        imagePullPolicy: IfNotPresent
+        command:
+        - sh
+        - -c
+        - until /.isoloom-probe/busybox nc -z -w 2 127.0.0.1 27017; do sleep 2; done && sh /isoloom/scripts/ctf__flag.sh && exec sleep infinity
+        env:
+        - name: CTF_FLAG_MAIN
+          valueFrom:
+            secretKeyRef:
+              name: isoloom-inputs
+              key: CTF_FLAG_MAIN
+              optional: true
+        volumeMounts:
+        - name: vol-data
+          mountPath: /data/db
+        - name: isoloom-probe
+          mountPath: /.isoloom-probe
+          readOnly: true
+        - name: scripts
+          mountPath: /isoloom/scripts
       nodeSelector:
         kubernetes.io/arch: amd64
       volumes:
       - name: vol-data
         persistentVolumeClaim:
           claimName: mongodb-data
+      - name: scripts
+        configMap:
+          name: isoloom-scripts
+          defaultMode: 493
       - name: isoloom-probe
         emptyDir: {}
 ---

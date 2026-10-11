@@ -1,0 +1,44 @@
+{
+  "objectives": [
+    {
+      "key": "main",
+      "title": "Read the flag",
+      "prompt": "Read another user's ticket: the admin's ticket is the flag.",
+      "check": {
+        "evidence": "SECRET",
+        "format": "FLAG{%s}"
+      },
+      "dev": "FLAG{dev-secdevlabs-ecommerce-api}",
+      "hints": [
+        "The ticket route takes a user id from its URL and never checks who asks.",
+        "Read about insecure direct object references (broken access control)."
+      ],
+      "steps": [
+        {
+          "key": "route",
+          "title": "Find the route",
+          "prompt": "Which route returns a ticket? (path, without the id)",
+          "check": {
+            "answer": [
+              "/ticket",
+              "ticket",
+              "/ticket/"
+            ]
+          }
+        },
+        {
+          "key": "class",
+          "title": "Name the weakness",
+          "prompt": "What class of vulnerability is this? (acronym accepted)",
+          "check": {
+            "answer": [
+              "idor",
+              "insecure direct object reference",
+              "broken access control"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
