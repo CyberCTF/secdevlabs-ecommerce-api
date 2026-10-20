@@ -8,30 +8,39 @@ version: 1
 name: secdevlabs-ecommerce-api
 
 # Given by the CyberCTF launcher: this player's flag. Without it the development flag.
-inputs: [CTF_FLAG_MAIN]
+inputs:
+  CTF_FLAG_MAIN: {}
 
 networks:
-  lab: { cidr: 10.60.91.0/24, internet: false }
+  lab: {cidr: 10.60.91.0/24, internet: false}
 
 machines:
   mongodb:
-    networks: { lab: 20 }
-    services: [{ port: 27017, name: mongodb }]
-    resources: { cpus: 1, memory_mb: 512 }
-    volumes: { data: /data/db }
-    inputs: [CTF_FLAG_MAIN]
-    docker:
+    networks: {lab: 20}
+    resources: {cpus: 1, memory_mb: 512}
+    volumes: {data: /data/db}
+    ports:
+      mongodb:
+        port: 27017
+    files:
+      - path: /run/lab/ctf_flag_main
+        input: CTF_FLAG_MAIN
+    setup:
+      - ctf/flag.sh
+    app:
       build: build/mongodb
-      init: [ctf/flag.sh]
 
   api:
-    networks: { lab: 10 }
-    services: [{ port: 10005, name: api, http: true, publish: 10005 }]
-    resources: { cpus: 1, memory_mb: 512 }
+    networks: {lab: 10}
+    resources: {cpus: 1, memory_mb: 512}
     depends_on: [mongodb]
-    docker:
+    ports:
+      api:
+        port: 10005
+        protocol: http
+        publish: true
+    app:
       build: build/api
-
 checks:
   - name: the store answers
     http: http://api:10005/
@@ -43,5 +52,5 @@ checks:
     wait: 60
 
 message: |
-  Vulnerable eCommerce API answers at http://localhost:{{ machines.api.services.0.publish }}/.
+  Vulnerable eCommerce API answers at {{ machines.api.ports.api.url }}.
   Register two users, log in, and compare how each one fetches its ticket.
